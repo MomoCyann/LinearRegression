@@ -1,79 +1,58 @@
-import matplotlib.pyplot as plt 
-import numpy as np
 import random
-#一元线性回归 y = ax + b + 误差
-#损失函数为均方误差损失函数（MSE），损失函数是y关于ab的函数
-#优化方法：梯度下降，ab的变化量是他们对于损失函数的偏导数
-#python用sympy可以做微积分
-#用一个参数去把变化量给缩小
+import numpy as np
+import matplotlib.pyplot as plt
 
-#参数设置
+# config
+# origin: y = 2x + 3
+m = 200
+n = 2000
+x = np.zeros([m])
+y = np.zeros([m])
+hx = np.zeros([m])
 a = 0
 b = 0
-n = 100
-m = 0.01#放缩梯度
-t = 5000 #迭代次数
-#初始变量
-x = []
-y = []
-y2 = []
-loss_min = 9999999
-best_a = 0 
-best_b = 0
-timer = 0
+alpha = 0.01 # 学习速率/梯度下降幅度
+loss_min = 99999
 
-#随机生成一条线的散点
-def initialize():
+def generate(x,y,hx):
+    for i in range(m):
+        tmp = random.uniform(0,20)
+        x[i] = tmp
+        y[i] = 2*tmp + 3 + np.random.normal() # 正态分布
+        hx[i] = a*tmp + b
+    return x,y,hx
+
+
+def cal_loss():
+    loss = (1/m) * np.sum(np.square(hx - y))
+    return loss
+
+
+def gradient_desent(a,b):
+    desent_a = 0
+    desent_b = 0
+    for i in range(m):
+        desent_a += x[i] * (hx[i]-y[i]) / m
+        desent_b += (hx[i]-y[i]) / m
+    a = a - desent_a * alpha
+    b = b - desent_b * alpha
+    return a,b
+
+
+if __name__ == "__main__":
+    generate(x,y,hx)
     for i in range(n):
-        temp=random.uniform(0,10)
-        x.append(temp)
-        y.append(2 * temp + 3 + np.random.normal())
-    return x, y
-
-#输出模型
-def model(a,b,x):
-    y2.clear()
-    for i in range(n):
-        y2.append(a * x[i] + b)
-    return y2
-
-#计算损失函数
-def loss_func(y, y2):
-    sum = 0
-    for i in range(n):
-        sum += 0.5/n * (np.square(y[i] - y2[i]))
-    return sum
-
-#梯度下降
-def optimize(a, b, x, y, y2):
-    delta_a = 0
-    delta_b = 0
-    for i in range(n):
-        delta_a += (y[i] - y2[i]) * (-x[i]) /n
-        delta_b += (y2[i] - y[i]) /n
-    a = a - delta_a*m
-    b = b - delta_b*m
-    return a, b
-
-#主代码
-x, y = initialize()
-for i in range(t):
-    y2 = model(a,b,x)
-    loss = loss_func(y,y2)
-    if loss < loss_min:
-        loss_min = loss
-        best_a = a
-        best_b = b
-        timer = t
-    a, b = optimize(a,b,x,y,y2)
-print(best_a, best_b, timer)
-
-plt.scatter(x,y)#散点
-x2 = np.arange(0,10,0.1)
-y3 = best_a * x2+best_b
-plt.plot(x2,y3)
-plt.grid(True)
-plt.show()
-
-    
-    
+        loss = cal_loss()
+        if loss_min > loss:
+            loss_min = loss
+            a,b = gradient_desent(a,b)
+            for i in range(m):
+                hx[i] = a*x[i] + b
+    print("final loss: " + str(loss))
+    print("origin: y = 2x + 3")
+    print("result is y = " + str(a) + "x + " + str(b))
+    plt.scatter(x, y)  # 散点
+    x2 = np.arange(0, 20, 0.1)
+    y2 = a * x2 + b
+    plt.plot(x2, y2, color='r')
+    plt.show()
