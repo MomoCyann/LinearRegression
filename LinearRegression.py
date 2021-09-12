@@ -2,57 +2,85 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
+# TODO 添加正则化
+
 # config
-# origin: y = 2x + 3
-m = 200
-n = 2000
-x = np.zeros([m])
+# origin: y = 3x0 + 2x1
+
+m = 200 # 样本数
+n = 2 # 特征向量个数
+g = 50 # 迭代次数
+x = np.zeros([m,n])
 y = np.zeros([m])
 hx = np.zeros([m])
-a = 0
-b = 0
-alpha = 0.01 # 学习速率/梯度下降幅度
+theta = np.zeros([1,n])
+alpha = 0.003 # 学习速率/梯度下降幅度
 loss_min = 99999
+loss_save = [] # 方便画图
 
 def generate(x,y,hx):
+
     for i in range(m):
+        x[i,0] = 1 # x0 = 1
         tmp = random.uniform(0,20)
-        x[i] = tmp
-        y[i] = 2*tmp + 3 + np.random.normal() # 正态分布
-        hx[i] = a*tmp + b
+        x[i,1] = tmp
+        y[i] = 2*tmp + 3 + 5*np.random.normal() # 正态分布
+        for j in range(n):
+            hx[i] += theta[0,j] * x[i,j]
     return x,y,hx
 
 
 def cal_loss():
+
     loss = (1/m) * np.sum(np.square(hx - y))
     return loss
 
 
-def gradient_desent(a,b):
-    desent_a = 0
-    desent_b = 0
-    for i in range(m):
-        desent_a += x[i] * (hx[i]-y[i]) / m
-        desent_b += (hx[i]-y[i]) / m
-    a = a - desent_a * alpha
-    b = b - desent_b * alpha
-    return a,b
+def gradient_desent(theta):
 
+    desent_theta = np.zeros([1,n])
+    for i in range(m):
+        for j in range(n):
+            desent_theta[0,j] += x[i,j] * (hx[i]-y[i]) / m
+    theta = theta - desent_theta * alpha
+    return theta
+
+
+def plot_cost():
+
+    gg = []
+    for i in range(g+1):
+        gg.append(i)
+    plt.xlabel('Epochs')
+    plt.ylabel('Cost')
+    plt.plot(gg, loss_save, 'm', linewidth = "5")
+    plt.show()
+
+
+def plot_point():
+    xx = []
+    for i in range(m):
+        xx.append(x[i, 1])
+    plt.scatter(xx, y)  # 散点
+    x2 = np.arange(0, 20, 0.1)
+    y2 = theta[0, 1] * x2 + theta[0, 0]
+    plt.plot(x2, y2, color='r')
+    plt.show()
 
 if __name__ == "__main__":
     generate(x,y,hx)
-    for i in range(n):
+    for g in range(g):
         loss = cal_loss()
+        loss_save.append(loss)
         if loss_min > loss:
             loss_min = loss
-            a,b = gradient_desent(a,b)
-            for i in range(m):
-                hx[i] = a*x[i] + b
+            theta = gradient_desent(theta)
+            for i in range(m): # 重新计算预测值
+                hx[i] = 0
+                for j in range(n):
+                    hx[i] += theta[0, j] * x[i, j]
     print("final loss: " + str(loss))
-    print("origin: y = 2x + 3")
-    print("result is y = " + str(a) + "x + " + str(b))
-    plt.scatter(x, y)  # 散点
-    x2 = np.arange(0, 20, 0.1)
-    y2 = a * x2 + b
-    plt.plot(x2, y2, color='r')
-    plt.show()
+    print("result is y = " + str(theta[0,1]) + "x + " + str(theta[0,0]))
+    # 可视化
+    plot_point()
+    plot_cost()
