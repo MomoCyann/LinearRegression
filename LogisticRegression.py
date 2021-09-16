@@ -2,20 +2,26 @@ from sklearn import datasets
 from sklearn.model_selection import train_test_split
 import numpy as np
 
-alpha = 0.003
-g = 200
+#TODO 添加训练效果的可视化  线性不可分测试
+
+alpha = 0.1
+g = 10
 hx = []
 y = []
-y_pred = []
 loss_min = 99999
 loss_save = []
+
+
 def load_data():
+    # 鸢尾花
     iris = datasets.load_iris()
     x = iris['data']
     y = iris['target']
     x = x[y!=2]
     y = y[y!=2]
-    x = x[:,2:]
+    # 取前两列数据 只分类0或1类鸢尾花 1和2类鸢尾花是线性不可分的。
+    # 似乎后两列数据没用，这里没做可视化预处理，一开始训练效果奇差
+    x = x[:,:2]
     # 给x第一列加一列1，常数项
     x_one = np.ones([len(x)])
     x = np.insert(x,0,values=x_one,axis=1)
@@ -56,12 +62,23 @@ def  gradiant_descent(theta):
 
 
 def predict():
+    y_pred = np.empty([len(y_test)])
     for i in range(len(y_test)):
         if sigmoid(np.dot(theta,x_test[i])) >= 0.5:
-            y_pred.append(1)
+            y_pred[i] = 1
         else:
-            y_pred.append(0)
+            y_pred[i] = 0
     return y_pred
+
+def cal_accuracy():
+    count = 0
+    for i in range(len(y_test)):
+        if y_test[i] == y_pred[i]:
+            count+=1
+        else:
+            continue
+    return count/len(y_test)
+
 
 if __name__ == "__main__":
     x_train,x_test,y_train,y_test = load_data()
@@ -79,3 +96,5 @@ if __name__ == "__main__":
     y_pred = predict()
     print(y_test)
     print(y_pred)
+    accuracy = cal_accuracy()
+    print(accuracy)
