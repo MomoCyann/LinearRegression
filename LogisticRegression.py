@@ -81,9 +81,11 @@ def cal_accuracy():
 
 
 if __name__ == "__main__":
+    # 初始化数据集和参数和假设
     x_train,x_test,y_train,y_test = load_data()
     theta = np.zeros([len(x_train[0])])
     hx,y = cal_hx_y()
+    # 迭代
     for g in range(g):
         loss = cal_loss()
         loss_save.append(loss)
