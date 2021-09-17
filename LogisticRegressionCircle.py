@@ -2,10 +2,10 @@ from sklearn import datasets
 from sklearn.model_selection import train_test_split
 import numpy as np
 import pandas as pd
-
+import matplotlib.pyplot as plt
 #TODO 添加训练效果的可视化
 
-alpha = 0.6
+alpha = 0.9
 g = 100
 hx = []
 y = []
@@ -19,9 +19,11 @@ def load_circle_data():
     dataframe = dataframe.values
     x = dataframe[:,:2]
     y = dataframe[:,2:]
-    # 给x第一列加一列1，常数项
+    # # 给x第一列加一列1，常数项
     x_one = np.ones([len(x)])
     x = np.insert(x,0,values=x_one,axis=1)
+    plt.scatter(x[:57, 1], x[:57, 2],color='red')
+    plt.scatter(x[57:, 1], x[57:, 2], color='blue')
     x_train,x_test,y_train,y_test = train_test_split(x,y,test_size=0.25,random_state=0)
     return x_train,x_test,y_train,y_test
 
@@ -35,6 +37,8 @@ def create_fx():
     fx = np.zeros([len(x_train),len(x_train[0])])
 
     fx = x_train * x_train
+    # fx = np.insert(fx, 1, values=x_train[:,2], axis=1)
+    # fx = np.insert(fx, 1, values=x_train[:,1], axis=1)
     return fx
 
 
@@ -75,6 +79,7 @@ def predict():
             y_pred[i] = 0
     return y_pred
 
+
 def cal_accuracy():
     count = 0
     for i in range(len(y_test)):
@@ -88,8 +93,8 @@ def cal_accuracy():
 if __name__ == "__main__":
     # 初始化数据集和参数和假设
     x_train,x_test,y_train,y_test = load_circle_data()
-    theta = np.zeros([len(x_train[0])])
     fx = create_fx()
+    theta = np.zeros([len(fx[0])])
     hx,y = cal_hx_y_more()
     # 迭代
     for g in range(g):
@@ -106,3 +111,4 @@ if __name__ == "__main__":
     print(y_pred)
     accuracy = cal_accuracy()
     print(accuracy)
+    plt.show()
